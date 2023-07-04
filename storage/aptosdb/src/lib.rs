@@ -812,7 +812,6 @@ impl AptosDB {
             .with_label_values(&["save_transactions_validation"])
             .start_timer();
         let buffered_state = self.state_store.buffered_state().lock();
-        info!("bowu enters here 2");
         ensure!(
             base_state_version == buffered_state.current_state().base_version,
             "base_state_version {:?} does not equal to the base_version {:?} in buffered state with current version {:?}",

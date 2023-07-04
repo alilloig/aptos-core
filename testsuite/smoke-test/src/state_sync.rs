@@ -18,6 +18,7 @@ use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
+use aptos_logger::info;
 
 #[tokio::test]
 async fn test_full_node_bootstrap_state_snapshot() {
@@ -631,7 +632,9 @@ async fn test_validator_sync(swarm: &mut LocalSwarm, validator_index_to_test: us
     execute_transactions(swarm, &validator_client_0, &mut account_1, &account_0, true).await;
 
     // Restart the validator and wait for all nodes to catchup
+    info!("bowu_starting_validator");
     swarm.validator_mut(validator).unwrap().start().unwrap();
+    info!("bowu_wait_for_all_nodes");
     wait_for_all_nodes(swarm).await;
 
     // Execute multiple transactions and verify the validator can sync

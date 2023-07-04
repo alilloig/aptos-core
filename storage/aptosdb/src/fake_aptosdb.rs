@@ -14,7 +14,6 @@ use aptos_crypto::{
     HashValue,
 };
 use aptos_infallible::Mutex;
-use aptos_logger::info;
 use aptos_storage_interface::{
     cached_state_view::ShardedStateCache, state_delta::StateDelta, DbReader, DbWriter,
     ExecutedTrees, MAX_REQUEST_LIMIT,
@@ -350,7 +349,7 @@ impl FakeAptosDB {
             // Once everything is successfully stored, update the latest in-memory ledger info.
             if let Some(x) = ledger_info_with_sigs {
                 self.inner
-                    .get_ledger_store()
+                    .get_ledger_store()?
                     .set_latest_ledger_info(x.clone());
 
                 LEDGER_VERSION.set(x.ledger_info().version() as i64);

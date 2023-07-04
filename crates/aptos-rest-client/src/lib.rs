@@ -1350,7 +1350,6 @@ impl Client {
             .query(&[("duration_secs", seconds)])
             .send()
             .await?;
-
         if !response.status().is_success() {
             Err(parse_error(response).await)
         } else {

@@ -17,6 +17,7 @@ use std::{
     sync::Arc,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
+use aptos_logger::info;
 
 const OPEN_API_HTML: &str = include_str!("../doc/spec.html");
 

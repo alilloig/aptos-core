@@ -367,9 +367,6 @@ impl<
     pub async fn bootstrapping_complete(&mut self) -> Result<(), Error> {
         info!(LogSchema::new(LogEntry::Bootstrapper)
             .message("The node has successfully bootstrapped!"));
-        // We don't need to distinguish fast sync vs non-fast sync.
-        // Storage only needs to know if bootstrapping is complete.
-        self.storage_synchronizer.notify_storage_fast_sync_ends()?;
         self.bootstrapped = true;
         self.notify_listeners_if_bootstrapped().await
     }
@@ -467,7 +464,7 @@ impl<
         let highest_known_ledger_version = highest_known_ledger_info.ledger_info().version();
 
         // If we've already synced to the highest known version, there's nothing to do
-        if highest_synced_version >= highest_known_ledger_version && highest_synced_version != 0 {
+        if highest_synced_version >= highest_known_ledger_version {
             info!(LogSchema::new(LogEntry::Bootstrapper)
                 .message(&format!("Highest synced version {} is >= highest known ledger version {}, nothing needs to be done.",
                     highest_synced_version, highest_known_ledger_version)));
@@ -544,6 +541,8 @@ impl<
                 // We've already bootstrapped to an initial state snapshot. If this a fullnode, the
                 // continuous syncer will take control and get the node up-to-date. If this is a
                 // validator, consensus will take control and sync depending on how it sees fit.
+                info!("bowu_fast_sync_complete");
+                self.storage_synchronizer.notify_storage_fast_sync_ends()?;
                 self.bootstrapping_complete().await
             } else {
                 panic!("Fast syncing is currently unsupported for nodes with existing state! \
@@ -634,6 +633,7 @@ impl<
         target_ledger_info: LedgerInfoWithSignatures,
         existing_snapshot_progress: bool,
     ) -> Result<(), Error> {
+        info!("bowu 1");
         // Initialize the target ledger info and verify it never changes
         if let Some(ledger_info_to_sync) = &self.state_value_syncer.ledger_info_to_sync {
             if ledger_info_to_sync != &target_ledger_info {
@@ -689,6 +689,7 @@ impl<
                 .await?
         };
         self.active_data_stream = Some(data_stream);
+        info!("bowu 2");
 
         Ok(())
     }

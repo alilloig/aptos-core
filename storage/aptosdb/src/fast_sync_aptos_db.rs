@@ -50,6 +50,7 @@ use aptos_types::{
 };
 use move_core_types::account_address::AccountAddress;
 use std::sync::{Arc, RwLock};
+use aptos_logger::info;
 
 /// This is a wrapper around [AptosDB] that is used to bootstrap the node for fast sync mode
 /// fast_sync_db is used for accessing genesis data
@@ -337,11 +338,15 @@ impl DbWriter for FastSyncStorageWrapper {
         ledger_infos: &[LedgerInfoWithSignatures],
     ) -> Result<()> {
         let status = self.get_fast_sync_status()?;
+        info!("bowu_write: {:?}", status.clone());
         assert_eq!(status, FastSyncStatus::STARTED);
         self.db_secondary
             .as_ref()
             .expect("db_secondary is None")
-            .finalize_state_snapshot(version, output_with_proof, ledger_infos)
+            .finalize_state_snapshot(version, output_with_proof, ledger_infos)?;
+        let mut status = self.fast_sync_status.write().expect("Failed to get write lock of fast sync status");
+        *status = FastSyncStatus::FINISHED;
+        Ok(())
     }
 
     fn save_transactions(
@@ -734,13 +739,15 @@ impl DbReader for FastSyncStorageWrapper {
     }
 
     fn get_latest_ledger_info_option(&self) -> Result<Option<LedgerInfoWithSignatures>> {
+        info!("bowu_read {:?}", self.is_fast_sync_bootstrap_finished());
         if self.is_fast_sync_bootstrap_finished() {
             self.db_secondary
                 .as_ref()
                 .expect("db_secondary is not initialized")
                 .get_latest_ledger_info_option()
         } else {
-            self.db_main.get_latest_ledger_info_option()
+            let res = self.db_main.get_latest_ledger_info_option()?;
+            Ok(res)
         }
     }
 

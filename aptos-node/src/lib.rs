@@ -542,7 +542,6 @@ pub fn setup_environment_and_start_node(
             mempool_client_receiver,
             peers_and_metadata,
         );
-
     // Create the consensus runtime (this blocks on state sync first)
     let consensus_runtime = consensus_network_interfaces.map(|consensus_network_interfaces| {
         // Wait until state sync has been initialized
